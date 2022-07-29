@@ -7,6 +7,7 @@ namespace Brazillian.Formatter
     public struct CEPFormatter
     {
         private const int NumberOfDigitsInCep = 8;
+        private const int CepSize = 9;
         private const char Hyphen = '-';
 
         public static string FormatString(ReadOnlySpan<char> cep)
@@ -16,11 +17,13 @@ namespace Brazillian.Formatter
                 throw new ArgumentException("The CEP is not in a valid format.", nameof(cep));
             }
 
-            Span<char> formattedCep = stackalloc char[9];
+            Span<char> formattedCep = stackalloc char[CepSize];
             var addedChars = 0;
 
             for (int i = 0; i < cep.Length; i++)
             {
+                if (i >= cep.Length)
+                    break;
                 if (!char.IsNumber(cep[i]))
                     continue;
 
@@ -46,7 +49,7 @@ namespace Brazillian.Formatter
                 return false;
             }
 
-            Span<char> formattedCepSpan = stackalloc char[9];
+            Span<char> formattedCepSpan = stackalloc char[CepSize];
             var addedChars = 0;
 
             for (int i = 0; i < cep.Length; i++)
