@@ -2,30 +2,6 @@ namespace Brazillian.Formatter.Tests;
 
 public class CEPFormatterTests
 {
-    [Fact]
-    public void ShouldReturnTrueIfCEPIsCorrect()
-    {
-        var cep = "16200-000";
-
-        Assert.True(CEPFormatter.IsValid(cep));
-    }
-
-    [Fact]
-    public void ShouldReturnFalseIfCEPHasSomeLetter()
-    {
-        var cep = "16200-O000";
-
-        Assert.False(CEPFormatter.IsValid(cep));
-    }
-
-    [Fact]
-    public void ShouldReturnFalseIfCEPHasLessThan8Numbers()
-    {
-        var cep = "1620-000";
-
-        Assert.False(CEPFormatter.IsValid(cep));
-    }
-
     [Theory]
     [InlineData("16200000")]
     [InlineData("16200-000")]

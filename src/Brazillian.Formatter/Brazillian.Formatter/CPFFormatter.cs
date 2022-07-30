@@ -4,125 +4,42 @@ using System.Text;
 
 namespace Brazillian.Formatter
 {
-    public struct CPFFormatter
+    public static class CPFFormatter
     {
         private const int NumericDigitsSize = 11;
         private const int CpfSize = 14;
         private const char Hyphen = '-';
         private const char Dot = '.';
+        private static readonly IDictionary<int, char> _nonNumericCharsPositions = new Dictionary<int, char>
+        {
+            { 3, Dot },
+            { 7, Dot },
+            { 11, Hyphen }
+        };
+        
 
         public static string FormatString(ReadOnlySpan<char> cpf)
         {
-            if (!IsValid(cpf))
+            if (TryFormatString(cpf, out string formattedCpf) == false)
             {
                 throw new ArgumentException("The CPF is not in a valid format.", nameof(cpf));
             }
-            
-            Span<char> formattedCpf = stackalloc char[CpfSize];
-            var addedChars = 0;
-            
-            for (int i = 0; i < formattedCpf.Length; i++)
-            {
-                if (i >= cpf.Length)
-                    break;
-                if (!char.IsNumber(cpf[i]))
-                    continue;
 
-                if (addedChars == 3 || addedChars == 7)
-                {
-                    formattedCpf[addedChars] = Dot;
-                    addedChars++;
-                }
-                else if (addedChars == 11)
-                {
-                    formattedCpf[addedChars] = Hyphen;
-                    addedChars++;
-                }
-
-                formattedCpf[addedChars] = cpf[i];
-                addedChars++;
-            }
-
-            return new string(formattedCpf);
+            return formattedCpf;
         }
 
         public static bool TryFormatString(ReadOnlySpan<char> cpf, out string? formattedCpf)
         {
             formattedCpf = null;
 
-            if (!IsValid(cpf))
-            {
+            if (IsValid(cpf) == false)
                 return false;
-            }
 
             Span<char> formattedCpfSpan = stackalloc char[CpfSize];
-            var addedChars = 0;
-
-            for (int i = 0; i < formattedCpfSpan.Length; i++)
-            {
-                if (i >= cpf.Length)
-                    break;
-                if (!char.IsNumber(cpf[i]))
-                    continue;
-
-                if (addedChars == 3 || addedChars == 7)
-                {
-                    formattedCpfSpan[addedChars] = Dot;
-                    addedChars++;
-                }
-                else if (addedChars == 11)
-                {
-                    formattedCpfSpan[addedChars] = Hyphen;
-                    addedChars++;
-                }
-
-                formattedCpfSpan[addedChars] = cpf[i];
-                addedChars++;
-            }
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cpf, ref formattedCpfSpan);
 
             formattedCpf = new string(formattedCpfSpan);
             return true;
-        }
-
-        /// <summary>
-        /// Check if the <see langword="string"/> is valid to be formatted as CPF and follow the CPF rules.
-        /// </summary>
-        /// <param name="cpf"><see langword="string"/> to be checked.</param>
-        /// <returns><see langword="true"/> if follows the CPF rules and can be formatted as CPF. <see langword="false"/> if is not valid.</returns>
-        public static bool IsValid(ReadOnlySpan<char> cpf)
-        {
-            if (!CheckNumberOfDigits(cpf))
-                return false;
-
-            Span<char> numericOnlyCpf = stackalloc char[NumericDigitsSize]; 
-            GetOnlyNumericValues(cpf, ref numericOnlyCpf);
-
-            return CheckCpfNumericRule(numericOnlyCpf);
-        }
-
-        private static bool CheckNumberOfDigits(ReadOnlySpan<char> cpf)
-        {
-            if (cpf.Length < NumericDigitsSize)
-                return false;
-
-            var numericCounter = 0;
-
-            for (int i = 0; i < cpf.Length; i++)
-            {
-                if (char.IsLetter(cpf[i]))
-                    return false;
-
-                if (char.IsNumber(cpf[i]))
-                    numericCounter++;
-
-                if (numericCounter > NumericDigitsSize)
-                    return false;
-            }
-
-            if (numericCounter == NumericDigitsSize)
-                return true;
-
-            return false;
         }
 
         private static bool CheckIfAllNumbersAreNotTheSame(ReadOnlySpan<char> numericOnlyCpf)
@@ -169,18 +86,16 @@ namespace Brazillian.Formatter
             return CheckVerificationDigits(cpf, digitsToCheck - 1);
         }
 
-        private static void GetOnlyNumericValues(ReadOnlySpan<char> cpfOrigin, ref Span<char> cpfResult)
+        public static bool IsValid(ReadOnlySpan<char> cpf)
         {
-            var resultSize = 0;
+            if (NumericDataFormatter.CheckMinimumSize(cpf, NumericDigitsSize) == false 
+                && NumericDataFormatter.CheckQuantityOfNumericChars(cpf, NumericDigitsSize) == false)
+                return false;
 
-            for (int i = 0; i < cpfOrigin.Length; i++)
-            {
-                if (char.IsNumber(cpfOrigin[i]) == false)
-                    continue;
+            Span<char> numericOnlyCpf = stackalloc char[NumericDigitsSize];
+            NumericDataFormatter.GetOnlyNumericValues(cpf, ref numericOnlyCpf);
 
-                cpfResult[resultSize] = cpfOrigin[i];
-                resultSize++;
-            }
+            return CheckCpfNumericRule(numericOnlyCpf);
         }
     }
 }

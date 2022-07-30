@@ -4,99 +4,47 @@ using System.Text;
 
 namespace Brazillian.Formatter
 {
-    public struct CEPFormatter
+    public static class CEPFormatter
     {
-        private const int NumberOfDigitsInCep = 8;
+        private const int NumericDigitsSize = 8;
         private const int CepSize = 9;
         private const char Hyphen = '-';
+        private static readonly IDictionary<int, char> _nonNumericCharsPositions = new Dictionary<int, char>
+        {
+            { 5, Hyphen }
+        };
 
         public static string FormatString(ReadOnlySpan<char> cep)
         {
-            if (!IsValid(cep))
+            if (TryFormatString(cep, out string formattedCep) == false)
             {
                 throw new ArgumentException("The CEP is not in a valid format.", nameof(cep));
             }
 
-            Span<char> formattedCep = stackalloc char[CepSize];
-            var addedChars = 0;
-
-            for (int i = 0; i < cep.Length; i++)
-            {
-                if (i >= cep.Length)
-                    break;
-                if (!char.IsNumber(cep[i]))
-                    continue;
-
-                if (addedChars == 5)
-                {
-                    formattedCep[addedChars] = Hyphen;
-                    addedChars++;
-                }
-                 
-                formattedCep[addedChars] = cep[i];
-                addedChars++;
-            }
-
-            return new string(formattedCep);
+            return formattedCep;
         }
 
         public static bool TryFormatString(ReadOnlySpan<char> cep, out string? formattedCep)
         {
             formattedCep = null;
             
-            if (!IsValid(cep))
-            {
+            if (IsValid(cep) == false)
                 return false;
-            }
 
             Span<char> formattedCepSpan = stackalloc char[CepSize];
-            var addedChars = 0;
-
-            for (int i = 0; i < cep.Length; i++)
-            {
-                if (!char.IsNumber(cep[i]))
-                    continue;
-
-                if (addedChars == 5)
-                {
-                    formattedCepSpan[addedChars] = Hyphen;
-                    addedChars++;
-                }
-
-                formattedCepSpan[addedChars] = cep[i];
-                addedChars++;
-            }
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cep, ref formattedCepSpan);
 
             formattedCep = new string(formattedCepSpan);
             return true;
         }
 
-        public static bool IsValid(ReadOnlySpan<char> cep)
+        private static bool IsValid(ReadOnlySpan<char> data)
         {
-            if (cep.Length < NumberOfDigitsInCep)
-                return false;
-
-            var numericCounter = 0;
-            
-            for (int i = 0; i < cep.Length; i++)
-            {
-                if (char.IsLetter(cep[i]))
-                    return false;
-
-                if (char.IsNumber(cep[i]))
-                    numericCounter++;
-            
-                if (numericCounter > NumberOfDigitsInCep)
-                    return false;
-            }
-
-            if (numericCounter == NumberOfDigitsInCep)
-                return true;
-
-            return false;
+            return NumericDataFormatter.CheckMinimumSize(data, NumericDigitsSize) 
+                && NumericDataFormatter.CheckQuantityOfNumericChars(data, NumericDigitsSize);
         }
 
-        public static bool IsValid(int cep)
+        private static bool IsValid(int cep)
         {
             return cep >= 0 && cep <= 99999999;
         }
