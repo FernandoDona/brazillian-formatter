@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Brazillian.Formatter
 {
@@ -27,7 +26,7 @@ namespace Brazillian.Formatter
         public static bool TryFormatString(ReadOnlySpan<char> cep, out string? formattedCep)
         {
             formattedCep = null;
-            
+
             if (IsValid(cep) == false)
                 return false;
 
@@ -40,8 +39,7 @@ namespace Brazillian.Formatter
 
         private static bool IsValid(ReadOnlySpan<char> data)
         {
-            return NumericDataFormatter.CheckMinimumSize(data, NumericDigitsSize) 
-                && NumericDataFormatter.CheckQuantityOfNumericChars(data, NumericDigitsSize);
+            return NumericDataFormatter.CheckQuantityOfNumericChars(data, NumericDigitsSize);
         }
 
         private static bool IsValid(int cep)

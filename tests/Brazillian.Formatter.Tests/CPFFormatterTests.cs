@@ -12,6 +12,7 @@ public class CPFFormatterTests
     [InlineData("111.111.111-11")]
     [InlineData("888.888.888-88")]
     [InlineData("345.134.163-23")]
+    [InlineData("32.598.657/0001-99")]
     [InlineData("345.134.163-2332")]
     [InlineData("297.171.90-21")]
     public void ShouldThrowExceptionWhenTryToFormatInvalidCPF(string cpf)
@@ -36,6 +37,7 @@ public class CPFFormatterTests
     [InlineData("888.888.888-88")]
     [InlineData("345.134.163-23")]
     [InlineData("345.134.163-2332")]
+    [InlineData("32.598.657/0001-99")]
     [InlineData("297.171.90-21")]
     public void ShouldReturnFalseWhenTryToFormatInvalidCPF(string cpf)
     {

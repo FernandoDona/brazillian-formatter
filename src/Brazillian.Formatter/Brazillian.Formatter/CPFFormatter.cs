@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Brazillian.Formatter
 {
@@ -16,7 +15,7 @@ namespace Brazillian.Formatter
             { 7, Dot },
             { 11, Hyphen }
         };
-        
+
 
         public static string FormatString(ReadOnlySpan<char> cpf)
         {
@@ -42,25 +41,9 @@ namespace Brazillian.Formatter
             return true;
         }
 
-        private static bool CheckIfAllNumbersAreNotTheSame(ReadOnlySpan<char> numericOnlyCpf)
-        {
-            var lastChar = numericOnlyCpf[0];
-            for (int i = 0; i < numericOnlyCpf.Length; i++)
-            {
-                if (lastChar != numericOnlyCpf[i])
-                {
-                    return true;
-                }
-
-                lastChar = numericOnlyCpf[i];
-            }
-
-            return false;
-        }
-
         private static bool CheckCpfNumericRule(ReadOnlySpan<char> numericOnlyCpf)
         {
-            return CheckIfAllNumbersAreNotTheSame(numericOnlyCpf) 
+            return NumericDataFormatter.CheckIfAllNumbersAreNotTheSame(numericOnlyCpf)
                 && CheckVerificationDigits(numericOnlyCpf);
         }
 
@@ -88,8 +71,7 @@ namespace Brazillian.Formatter
 
         public static bool IsValid(ReadOnlySpan<char> cpf)
         {
-            if (NumericDataFormatter.CheckMinimumSize(cpf, NumericDigitsSize) == false 
-                && NumericDataFormatter.CheckQuantityOfNumericChars(cpf, NumericDigitsSize) == false)
+            if (NumericDataFormatter.CheckQuantityOfNumericChars(cpf, NumericDigitsSize) == false)
                 return false;
 
             Span<char> numericOnlyCpf = stackalloc char[NumericDigitsSize];

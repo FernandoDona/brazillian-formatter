@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Brazillian.Formatter
 {
     internal static class NumericDataFormatter
     {
-        internal static bool CheckMinimumSize(ReadOnlySpan<char> data, int minimunSize) => data.Length >= minimunSize;
-
         internal static bool CheckQuantityOfNumericChars(ReadOnlySpan<char> data, int numericCharsinData)
         {
+            if (data.Length < numericCharsinData)
+                return false;
+
             var numericCounter = 0;
 
             for (int i = 0; i < data.Length; i++)
@@ -61,6 +61,22 @@ namespace Brazillian.Formatter
 
                 formattedData[addedChars++] = dataOrigin[i];
             }
+        }
+
+        internal static bool CheckIfAllNumbersAreNotTheSame(ReadOnlySpan<char> numericOnlyData)
+        {
+            var lastChar = numericOnlyData[0];
+            for (int i = 0; i < numericOnlyData.Length; i++)
+            {
+                if (lastChar != numericOnlyData[i])
+                {
+                    return true;
+                }
+
+                lastChar = numericOnlyData[i];
+            }
+
+            return false;
         }
     }
 }
