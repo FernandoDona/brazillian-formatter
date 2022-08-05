@@ -54,4 +54,41 @@ public class CPFFormatterTests
     {
         Assert.True(CPFFormatter.TryFormatString(cpf, out _));
     }
+
+    [Theory]
+    [InlineData(50312283008)]
+    [InlineData(69375907090)]
+    [InlineData(90970999003)]
+    public void ShouldReturnTrueAndFormatLongToString(long cnpj)
+    {
+        var correctResultList = new List<string>
+        {
+            "503.122.830-08",
+            "693.759.070-90",
+            "909.709.990-03"
+        };
+
+        var succeeded = CPFFormatter.TryParseToString(cnpj, out var formattedCep);
+        Assert.Contains(formattedCep, correctResultList);
+        Assert.True(succeeded);
+    }
+
+    [Theory]
+    [InlineData(162003456)]
+    [InlineData(9097099900)]
+    [InlineData(909709990033)]
+    public void ShouldReturnFalseWhenTryFormatLongToString(long cnpj)
+    {
+        var succeeded = CPFFormatter.TryParseToString(cnpj, out var formattedCnpj);
+        Assert.False(succeeded);
+    }
+
+    [Theory]
+    [InlineData(162003456)]
+    [InlineData(9097099900)]
+    [InlineData(909709990033)]
+    public void ShouldThrowExceptionWhenTryToFormatLongToString(long cnpj)
+    {
+        Assert.Throws<ArgumentException>(() => CPFFormatter.ParseToString(cnpj));
+    }
 }

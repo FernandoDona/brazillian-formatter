@@ -6,7 +6,7 @@ namespace Brazillian.Formatter
     public static class CEPFormatter
     {
         private const int NumericDigitsSize = 8;
-        private const int CepSize = 9;
+        private const int Size = 9;
         private const char Hyphen = '-';
         private static readonly IDictionary<int, char> _nonNumericCharsPositions = new Dictionary<int, char>
         {
@@ -30,13 +30,42 @@ namespace Brazillian.Formatter
             if (IsValid(cep) == false)
                 return false;
 
-            Span<char> formattedCepSpan = stackalloc char[CepSize];
-            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cep, ref formattedCepSpan);
+            Span<char> formattedSpan = stackalloc char[Size];
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cep, ref formattedSpan);
 
-            formattedCep = new string(formattedCepSpan);
+            formattedCep = new string(formattedSpan);
             return true;
         }
 
+        public static string ParseToString(int cep)
+        {
+            if (TryParseToString(cep, out string formattedCep) == false)
+            {
+                throw new ArgumentException("The CEP is not in a valid format.", nameof(cep));
+            }
+
+            return formattedCep;
+        }
+
+        public static bool TryParseToString(int cep, out string formattedCep)
+        {
+            formattedCep = null;
+
+            if (IsValid(cep) == false)
+                return false;
+
+            Span<char> numericSpan = stackalloc char[NumericDigitsSize];
+            numericSpan[0] = '0';
+            NumericDataFormatter.TryParseNumberToSpanChar(cep, ref numericSpan);
+
+            Span<char> formattedSpan = stackalloc char[Size];
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+
+            formattedCep = new string(formattedSpan);
+
+            return true;
+        }
+        
         private static bool IsValid(ReadOnlySpan<char> data)
         {
             return NumericDataFormatter.CheckQuantityOfNumericChars(data, NumericDigitsSize);
@@ -44,7 +73,7 @@ namespace Brazillian.Formatter
 
         private static bool IsValid(int cep)
         {
-            return cep >= 0 && cep <= 99999999;
+            return cep >= 999999 && cep <= 99999999;
         }
     }
 }

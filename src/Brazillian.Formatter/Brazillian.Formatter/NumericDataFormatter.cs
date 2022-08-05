@@ -78,5 +78,17 @@ namespace Brazillian.Formatter
 
             return false;
         }
+
+        internal static void TryParseNumberToSpanChar(long data, ref Span<char> numericOnlyData)
+        {
+            var index = numericOnlyData.Length - 1;
+            while (data > 0)
+            {
+                var rest = data % 10;
+                var restChar = Convert.ToChar(rest + '0');
+                numericOnlyData[index--] = Convert.ToChar(restChar);
+                data /= 10;
+            }
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace Brazillian.Formatter
     public static class CPFFormatter
     {
         private const int NumericDigitsSize = 11;
-        private const int CpfSize = 14;
+        private const int Size = 14;
         private const char Hyphen = '-';
         private const char Dot = '.';
         private static readonly IDictionary<int, char> _nonNumericCharsPositions = new Dictionary<int, char>
@@ -34,7 +34,7 @@ namespace Brazillian.Formatter
             if (IsValid(cpf) == false)
                 return false;
 
-            Span<char> formattedCpfSpan = stackalloc char[CpfSize];
+            Span<char> formattedCpfSpan = stackalloc char[Size];
             NumericDataFormatter.FormatData(_nonNumericCharsPositions, cpf, ref formattedCpfSpan);
 
             formattedCpf = new string(formattedCpfSpan);
@@ -78,6 +78,39 @@ namespace Brazillian.Formatter
             NumericDataFormatter.GetOnlyNumericValues(cpf, ref numericOnlyCpf);
 
             return CheckCpfNumericRule(numericOnlyCpf);
+        }
+
+        public static string ParseToString(long cpf)
+        {
+            if (TryParseToString(cpf, out string formattedCpf) == false)
+            {
+                throw new ArgumentException("The CPF is not in a valid format.", nameof(cpf));
+            }
+
+            return formattedCpf;
+        }
+
+        public static bool TryParseToString(long cpf, out string formattedCpf)
+        {
+            formattedCpf = null;
+
+            if (IsValid(cpf) == false)
+                return false;
+
+            Span<char> numericSpan = stackalloc char[NumericDigitsSize];
+            NumericDataFormatter.TryParseNumberToSpanChar(cpf, ref numericSpan);
+
+            Span<char> formattedSpan = stackalloc char[Size];
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+
+            formattedCpf = new string(formattedSpan);
+
+            return true;
+        }
+
+        private static bool IsValid(long cpf)
+        {
+            return cpf > 9999999999 && cpf < 99999999999;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Brazillian.Formatter
     public struct CNPJFormatter
     {
         private const int NumericDigitsSize = 14;
-        private const int CnpjSize = 18;
+        private const int Size = 18;
         private const char Hyphen = '-';
         private const char Dot = '.';
         private const char Slash = '/';
@@ -35,10 +35,10 @@ namespace Brazillian.Formatter
             if (IsValid(cnpj) == false)
                 return false;
 
-            Span<char> formattedCnpjSpan = stackalloc char[CnpjSize];
-            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cnpj, ref formattedCnpjSpan);
+            Span<char> formattedSpan = stackalloc char[Size];
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cnpj, ref formattedSpan);
 
-            formattedCnpj = new string(formattedCnpjSpan);
+            formattedCnpj = new string(formattedSpan);
             return true;
         }
 
@@ -71,6 +71,39 @@ namespace Brazillian.Formatter
                 return false;
 
             return CheckVerificationDigits(cnpj, digitsToCheck - 1);
+        }
+
+        public static string ParseToString(long cnpj)
+        {
+            if (TryParseToString(cnpj, out string formattedCnpj) == false)
+            {
+                throw new ArgumentException("The CNPJ is not in a valid format.", nameof(cnpj));
+            }
+
+            return formattedCnpj;
+        }
+
+        public static bool TryParseToString(long cnpj, out string formattedCnpj)
+        {
+            formattedCnpj = null;
+
+            if (IsValid(cnpj) == false)
+                return false;
+
+            Span<char> numericSpan = stackalloc char[NumericDigitsSize];
+            NumericDataFormatter.TryParseNumberToSpanChar(cnpj, ref numericSpan);
+
+            Span<char> formattedSpan = stackalloc char[Size];
+            NumericDataFormatter.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+
+            formattedCnpj = new string(formattedSpan);
+
+            return true;
+        }
+
+        private static bool IsValid(long cnpj)
+        {
+            return cnpj > 9999999999999 && cnpj < 99999999999999;
         }
 
         public static bool IsValid(ReadOnlySpan<char> cnpj)

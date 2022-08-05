@@ -61,4 +61,41 @@ public class CNPJFormatterTests
     {
         Assert.True(CNPJFormatter.TryFormatString(cnpj, out _));
     }
+
+    [Theory]
+    [InlineData(69841968000147)]
+    [InlineData(39702266000111)]
+    [InlineData(17641528000142)]
+    public void ShouldReturnTrueAndFormatLongToString(long cnpj)
+    {
+        var correctResultList = new List<string>
+        {
+            "69.841.968/0001-47",
+            "39.702.266/0001-11",
+            "17.641.528/0001-42"
+        };
+
+        var succeeded = CNPJFormatter.TryParseToString(cnpj, out var formattedCep);
+        Assert.Contains(formattedCep, correctResultList);
+        Assert.True(succeeded);
+    }
+
+    [Theory]
+    [InlineData(162003456)]
+    [InlineData(6984196800147)]
+    [InlineData(397022660001113)]
+    public void ShouldReturnFalseWhenTryFormatLongToString(long cnpj)
+    {
+        var succeeded = CNPJFormatter.TryParseToString(cnpj, out var formattedCnpj);
+        Assert.False(succeeded);
+    }
+
+    [Theory]
+    [InlineData(162003456)]
+    [InlineData(6984196800147)]
+    [InlineData(397022660001113)]
+    public void ShouldThrowExceptionWhenTryToFormatLongToString(long cnpj)
+    {
+        Assert.Throws<ArgumentException>(() => CNPJFormatter.ParseToString(cnpj));
+    }
 }

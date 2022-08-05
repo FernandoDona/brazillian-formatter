@@ -43,4 +43,37 @@ public class CEPFormatterTests
         Assert.Null(formattedCep);
         Assert.False(succeeded);
     }
+
+    [Theory]
+    [InlineData(16200456)]
+    [InlineData(1620456)]
+    public void ShouldReturnTrueAndFormatIntToString(int cep)
+    {
+        var correctResultList = new List<string>
+        {
+            "16200-456",
+            "01620-456"
+        };
+
+        var succeeded = CEPFormatter.TryParseToString(cep, out var formattedCep);
+        Assert.Contains(formattedCep, correctResultList);
+        Assert.True(succeeded);
+    }
+
+    [Theory]
+    [InlineData(162003456)]
+    [InlineData(162034)]
+    public void ShouldReturnFalseWhenTryFormatIntToString(int cep)
+    {
+        var succeeded = CEPFormatter.TryParseToString(cep, out var formattedCep);
+        Assert.False(succeeded);
+    }
+
+    [Theory]
+    [InlineData(162003456)]
+    [InlineData(162034)]
+    public void ShouldThrowExceptionWhenTryToFormatIntToString(int cep)
+    {
+        Assert.Throws<ArgumentException>(() => CEPFormatter.ParseToString(cep));
+    }
 }
