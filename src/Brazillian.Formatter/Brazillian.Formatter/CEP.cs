@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Brazillian.Formatter
 {
-    public static class CEPFormatter
+    public struct CEP : IEquatable<CEP>
     {
         private const int NumericDigitsSize = 8;
         private const int Size = 9;
@@ -12,6 +12,16 @@ namespace Brazillian.Formatter
         {
             { 5, Hyphen }
         };
+        private readonly string _value;
+
+        private CEP(int value)
+        {
+            _value = Parse(value);
+        }
+        private CEP(string value)
+        {
+            _value = FormatString(value);
+        }
 
         public static string FormatString(ReadOnlySpan<char> cep)
         {
@@ -31,15 +41,15 @@ namespace Brazillian.Formatter
                 return false;
 
             Span<char> formattedSpan = stackalloc char[Size];
-            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cep, ref formattedSpan);
+            NumericData.FormatData(_nonNumericCharsPositions, cep, ref formattedSpan);
 
             formattedCep = new string(formattedSpan);
             return true;
         }
 
-        public static string ParseToString(int cep)
+        public static string Parse(int cep)
         {
-            if (TryParseToString(cep, out string formattedCep) == false)
+            if (TryParse(cep, out string formattedCep) == false)
             {
                 throw new ArgumentException("The CEP is not in a valid format.", nameof(cep));
             }
@@ -47,19 +57,19 @@ namespace Brazillian.Formatter
             return formattedCep;
         }
 
-        public static bool TryParseToString(int cep, out string formattedCep)
+        public static bool TryParse(int cep, out string formattedCep)
         {
             formattedCep = null;
 
-            if (IsValid(cep) == false)
+            if (IsValidRange(cep) == false)
                 return false;
 
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
             numericSpan[0] = '0';
-            NumericDataFormatter.TryParseNumberToSpanChar(cep, ref numericSpan);
+            NumericData.TryParseNumberToSpanChar(cep, ref numericSpan);
 
             Span<char> formattedSpan = stackalloc char[Size];
-            NumericDataFormatter.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
 
             formattedCep = new string(formattedSpan);
 
@@ -68,12 +78,17 @@ namespace Brazillian.Formatter
         
         private static bool IsValid(ReadOnlySpan<char> data)
         {
-            return NumericDataFormatter.CheckQuantityOfNumericChars(data, NumericDigitsSize);
+            return NumericData.CheckQuantityOfNumericChars(data, NumericDigitsSize);
         }
 
-        private static bool IsValid(int cep)
-        {
-            return cep >= 999999 && cep <= 99999999;
-        }
+        private static bool IsValidRange(int cep) => cep >= 999999 && cep <= 99999999;
+
+        public override string ToString() => _value;
+
+        public bool Equals(CEP other) => _value == other._value;
+        public override bool Equals(object obj) => obj.ToString() == _value;
+
+        public static implicit operator CEP(string input) => new CEP(input);
+        public static implicit operator CEP(int input) => new CEP(input);
     }
 }

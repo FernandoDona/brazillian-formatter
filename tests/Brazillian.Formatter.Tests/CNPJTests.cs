@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Brazillian.Formatter.Tests;
-public class CNPJFormatterTests
+public class CNPJTests
 {
     [Theory]
     [InlineData("22.644.521/0001-20")]
@@ -16,7 +16,8 @@ public class CNPJFormatterTests
     [InlineData("96934594562194")]
     public void ShouldThrowExceptionWhenTryToFormatInvalidCNPJ(string cnpj)
     {
-        Assert.Throws<ArgumentException>(() => CNPJFormatter.FormatString(cnpj));
+        CNPJ newCnpj;
+        Assert.Throws<ArgumentException>(() => newCnpj = cnpj);
     }
 
     [Theory]
@@ -34,8 +35,8 @@ public class CNPJFormatterTests
             "65.487.395/0001-44",
             "32.598.657/0001-99"
         };
-
-        Assert.Contains(CNPJFormatter.FormatString(cnpj), correctResultList);
+        CNPJ newCnpj = cnpj;
+        Assert.Contains(newCnpj.ToString(), correctResultList);
     }
 
     [Theory]
@@ -47,7 +48,7 @@ public class CNPJFormatterTests
     [InlineData("96934594562194")]
     public void ShouldReturnFalseWhenTryToFormatInvalidCNPJ(string cnpj)
     {
-        Assert.False(CNPJFormatter.TryFormatString(cnpj, out _));
+        Assert.False(CNPJ.TryFormatString(cnpj, out _));
     }
 
     [Theory]
@@ -59,7 +60,7 @@ public class CNPJFormatterTests
     [InlineData("  32 598 657  0001 99  ")]
     public void ShouldReturnTrueIfCnpjIsCorrect(string cnpj)
     {
-        Assert.True(CNPJFormatter.TryFormatString(cnpj, out _));
+        Assert.True(CNPJ.TryFormatString(cnpj, out _));
     }
 
     [Theory]
@@ -75,7 +76,7 @@ public class CNPJFormatterTests
             "17.641.528/0001-42"
         };
 
-        var succeeded = CNPJFormatter.TryParseToString(cnpj, out var formattedCep);
+        var succeeded = CNPJ.TryParse(cnpj, out var formattedCep);
         Assert.Contains(formattedCep, correctResultList);
         Assert.True(succeeded);
     }
@@ -86,7 +87,7 @@ public class CNPJFormatterTests
     [InlineData(397022660001113)]
     public void ShouldReturnFalseWhenTryFormatLongToString(long cnpj)
     {
-        var succeeded = CNPJFormatter.TryParseToString(cnpj, out var formattedCnpj);
+        var succeeded = CNPJ.TryParse(cnpj, out var formattedCnpj);
         Assert.False(succeeded);
     }
 
@@ -96,6 +97,7 @@ public class CNPJFormatterTests
     [InlineData(397022660001113)]
     public void ShouldThrowExceptionWhenTryToFormatLongToString(long cnpj)
     {
-        Assert.Throws<ArgumentException>(() => CNPJFormatter.ParseToString(cnpj));
+        CNPJ newCnpj;
+        Assert.Throws<ArgumentException>(() => newCnpj = cnpj);
     }
 }

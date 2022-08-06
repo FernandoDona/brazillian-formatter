@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Brazillian.Formatter
 {
-    public static class CPFFormatter
+    public struct CPF : IEquatable<CPF>
     {
         private const int NumericDigitsSize = 11;
         private const int Size = 14;
@@ -15,7 +15,16 @@ namespace Brazillian.Formatter
             { 7, Dot },
             { 11, Hyphen }
         };
+        private readonly string _value;
 
+        private CPF(long value)
+        {
+            _value = Parse(value);
+        }
+        private CPF(string value)
+        {
+            _value = FormatString(value);
+        }
 
         public static string FormatString(ReadOnlySpan<char> cpf)
         {
@@ -35,7 +44,7 @@ namespace Brazillian.Formatter
                 return false;
 
             Span<char> formattedCpfSpan = stackalloc char[Size];
-            NumericDataFormatter.FormatData(_nonNumericCharsPositions, cpf, ref formattedCpfSpan);
+            NumericData.FormatData(_nonNumericCharsPositions, cpf, ref formattedCpfSpan);
 
             formattedCpf = new string(formattedCpfSpan);
             return true;
@@ -43,7 +52,7 @@ namespace Brazillian.Formatter
 
         private static bool CheckCpfNumericRule(ReadOnlySpan<char> numericOnlyCpf)
         {
-            return NumericDataFormatter.CheckIfAllNumbersAreNotTheSame(numericOnlyCpf)
+            return NumericData.CheckIfAllNumbersAreNotTheSame(numericOnlyCpf)
                 && CheckVerificationDigits(numericOnlyCpf);
         }
 
@@ -69,20 +78,20 @@ namespace Brazillian.Formatter
             return CheckVerificationDigits(cpf, digitsToCheck - 1);
         }
 
-        public static bool IsValid(ReadOnlySpan<char> cpf)
+        private static bool IsValid(ReadOnlySpan<char> cpf)
         {
-            if (NumericDataFormatter.CheckQuantityOfNumericChars(cpf, NumericDigitsSize) == false)
+            if (NumericData.CheckQuantityOfNumericChars(cpf, NumericDigitsSize) == false)
                 return false;
 
             Span<char> numericOnlyCpf = stackalloc char[NumericDigitsSize];
-            NumericDataFormatter.GetOnlyNumericValues(cpf, ref numericOnlyCpf);
+            NumericData.GetOnlyNumericValues(cpf, ref numericOnlyCpf);
 
             return CheckCpfNumericRule(numericOnlyCpf);
         }
 
-        public static string ParseToString(long cpf)
+        public static string Parse(long cpf)
         {
-            if (TryParseToString(cpf, out string formattedCpf) == false)
+            if (TryParse(cpf, out string formattedCpf) == false)
             {
                 throw new ArgumentException("The CPF is not in a valid format.", nameof(cpf));
             }
@@ -90,27 +99,34 @@ namespace Brazillian.Formatter
             return formattedCpf;
         }
 
-        public static bool TryParseToString(long cpf, out string formattedCpf)
+        public static bool TryParse(long cpf, out string formattedCpf)
         {
             formattedCpf = null;
 
-            if (IsValid(cpf) == false)
+            if (IsValidRange(cpf) == false)
                 return false;
 
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
-            NumericDataFormatter.TryParseNumberToSpanChar(cpf, ref numericSpan);
+            NumericData.TryParseNumberToSpanChar(cpf, ref numericSpan);
 
             Span<char> formattedSpan = stackalloc char[Size];
-            NumericDataFormatter.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
 
             formattedCpf = new string(formattedSpan);
 
             return true;
         }
 
-        private static bool IsValid(long cpf)
+        private static bool IsValidRange(long cpf)
         {
             return cpf > 9999999999 && cpf < 99999999999;
         }
+
+        public override string ToString() => _value;
+        public bool Equals(CPF other) => _value == other._value;
+        public override bool Equals(object obj) => obj.ToString() == _value;
+
+        public static implicit operator CPF(string input) => new CPF(input);
+        public static implicit operator CPF(long input) => new CPF(input);
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Brazillian.Formatter
 {
-    internal static class NumericDataFormatter
+    internal static class NumericData
     {
         internal static bool CheckQuantityOfNumericChars(ReadOnlySpan<char> data, int numericCharsinData)
         {
