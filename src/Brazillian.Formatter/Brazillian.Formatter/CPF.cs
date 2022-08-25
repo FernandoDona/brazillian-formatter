@@ -26,37 +26,47 @@ namespace Brazillian.Formatter
             _value = FormatString(value);
         }
 
-        public static string FormatString(ReadOnlySpan<char> cpf)
+        /// <summary>
+        /// If the CPF is valid it will be returned a formatted CPF string
+        /// </summary>
+        /// <param name="input">CPF to be formatted</param>
+        /// <exception cref="ArgumentException">If the input is not a valid CPF</exception>
+        public static string FormatString(ReadOnlySpan<char> input)
         {
-            if (TryFormatString(cpf, out string formattedCpf) == false)
+            if (TryFormatString(input, out string output) == false)
             {
-                throw new ArgumentException("The CPF is not in a valid format.", nameof(cpf));
+                throw new ArgumentException("The CPF is not in a valid format.", nameof(input));
             }
 
-            return formattedCpf;
+            return output;
         }
 
-        public static bool TryFormatString(ReadOnlySpan<char> cpf, out string? formattedCpf)
+        /// <summary>
+        /// If the CPF is valid it will be returned a formatted CPF string
+        /// </summary>
+        /// <param name="input">CPF to be formatted</param>
+        /// <param name="output">A formatted string</param>
+        public static bool TryFormatString(ReadOnlySpan<char> input, out string? output)
         {
-            formattedCpf = null;
+            output = null;
 
-            if (IsValid(cpf) == false)
+            if (IsValid(input) == false)
                 return false;
 
-            Span<char> formattedCpfSpan = stackalloc char[Size];
-            NumericData.FormatData(_nonNumericCharsPositions, cpf, ref formattedCpfSpan);
+            Span<char> outputAsSpan = stackalloc char[Size];
+            NumericData.FormatData(_nonNumericCharsPositions, input, ref outputAsSpan);
 
-            formattedCpf = new string(formattedCpfSpan);
+            output = new string(outputAsSpan);
             return true;
         }
 
-        private static bool CheckCpfNumericRule(ReadOnlySpan<char> numericOnlyCpf)
+        private static bool CheckCpfNumericRule(ReadOnlySpan<char> numericOnlyInput)
         {
-            return NumericData.CheckIfAllNumbersAreNotTheSame(numericOnlyCpf)
-                && CheckVerificationDigits(numericOnlyCpf);
+            return NumericData.CheckIfAllNumbersAreNotTheSame(numericOnlyInput)
+                && CheckVerificationDigits(numericOnlyInput);
         }
 
-        private static bool CheckVerificationDigits(ReadOnlySpan<char> cpf, int digitsToCheck = 2)
+        private static bool CheckVerificationDigits(ReadOnlySpan<char> input, int digitsToCheck = 2)
         {
             if (digitsToCheck == 0)
                 return true;
@@ -64,55 +74,65 @@ namespace Brazillian.Formatter
             double sum = 0;
             int multiplier = NumericDigitsSize - 1;
 
-            for (int i = 2 - digitsToCheck; i < cpf.Length - digitsToCheck; i++)
+            for (int i = 2 - digitsToCheck; i < input.Length - digitsToCheck; i++)
             {
-                sum += char.GetNumericValue(cpf[i]) * multiplier;
+                sum += char.GetNumericValue(input[i]) * multiplier;
                 multiplier--;
             }
 
             var rest = sum % NumericDigitsSize;
             var verificationDigit = NumericDigitsSize - rest;
-            if (verificationDigit != (int)char.GetNumericValue(cpf[NumericDigitsSize - digitsToCheck]))
+            if (verificationDigit != (int)char.GetNumericValue(input[NumericDigitsSize - digitsToCheck]))
                 return false;
 
-            return CheckVerificationDigits(cpf, digitsToCheck - 1);
+            return CheckVerificationDigits(input, digitsToCheck - 1);
         }
 
-        private static bool IsValid(ReadOnlySpan<char> cpf)
+        private static bool IsValid(ReadOnlySpan<char> input)
         {
-            if (NumericData.CheckQuantityOfNumericChars(cpf, NumericDigitsSize) == false)
+            if (NumericData.CheckQuantityOfNumericChars(input, NumericDigitsSize) == false)
                 return false;
 
-            Span<char> numericOnlyCpf = stackalloc char[NumericDigitsSize];
-            NumericData.GetOnlyNumericValues(cpf, ref numericOnlyCpf);
+            Span<char> numericOnlyInput = stackalloc char[NumericDigitsSize];
+            NumericData.GetOnlyNumericValues(input, ref numericOnlyInput);
 
-            return CheckCpfNumericRule(numericOnlyCpf);
+            return CheckCpfNumericRule(numericOnlyInput);
         }
 
-        public static string Parse(long cpf)
+        /// <summary>
+        /// If the CPF is valid it will be returned a formatted CPF string
+        /// </summary>
+        /// <param name="input">CPF to be formatted</param>
+        /// <exception cref="ArgumentException">If the input is not a valid CPF</exception>
+        public static string Parse(long input)
         {
-            if (TryParse(cpf, out string formattedCpf) == false)
+            if (TryParse(input, out string output) == false)
             {
-                throw new ArgumentException("The CPF is not in a valid format.", nameof(cpf));
+                throw new ArgumentException("The CPF is not in a valid format.", nameof(input));
             }
 
-            return formattedCpf;
+            return output;
         }
 
-        public static bool TryParse(long cpf, out string formattedCpf)
+        /// <summary>
+        /// If the CPF is valid it will be returned a formatted CPF string
+        /// </summary>
+        /// <param name="input">CPF to be formatted</param>
+        /// <param name="output">A formatted string</param>
+        public static bool TryParse(long input, out string output)
         {
-            formattedCpf = null;
+            output = null;
 
-            if (IsValidRange(cpf) == false)
+            if (IsValidRange(input) == false)
                 return false;
 
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
-            NumericData.TryParseNumberToSpanChar(cpf, ref numericSpan);
+            NumericData.TryParseNumberToSpanChar(input, ref numericSpan);
 
-            Span<char> formattedSpan = stackalloc char[Size];
-            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+            Span<char> outputAsSpan = stackalloc char[Size];
+            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref outputAsSpan);
 
-            formattedCpf = new string(formattedSpan);
+            output = new string(outputAsSpan);
 
             return true;
         }
@@ -125,6 +145,7 @@ namespace Brazillian.Formatter
         public override string ToString() => _value;
         public bool Equals(CPF other) => _value == other._value;
         public override bool Equals(object obj) => obj.ToString() == _value;
+        public override int GetHashCode() => HashCode.Combine(_value);
 
         public static implicit operator CPF(string input) => new CPF(input);
         public static implicit operator CPF(long input) => new CPF(input);

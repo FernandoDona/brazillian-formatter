@@ -27,38 +27,48 @@ namespace Brazillian.Formatter
         {
             _value = FormatString(value);
         }
-
-        public static string FormatString(ReadOnlySpan<char> cnpj)
+        
+        /// <summary>
+        /// If the CNPJ is valid it will be returned a formatted CNPJ string
+        /// </summary>
+        /// <param name="input">CNPJ to be formatted</param>
+        /// <exception cref="ArgumentException">If the input is not a valid CNPJ</exception>
+        public static string FormatString(ReadOnlySpan<char> input)
         {
-            if (TryFormatString(cnpj, out string formattedCnpj) == false)
+            if (TryFormatString(input, out string output) == false)
             {
-                throw new ArgumentException("The CNPJ is not in a valid format.", nameof(cnpj));
+                throw new ArgumentException("The CNPJ is not in a valid format.", nameof(input));
             }
 
-            return formattedCnpj;
+            return output;
         }
-
-        public static bool TryFormatString(ReadOnlySpan<char> cnpj, out string? formattedCnpj)
+        
+        /// <summary>
+        /// If the CNPJ is valid it will be returned a formatted CNPJ string
+        /// </summary>
+        /// <param name="input">CNPJ to be formatted</param>
+        /// <param name="output">A formatted string</param>
+        public static bool TryFormatString(ReadOnlySpan<char> input, out string? output)
         {
-            formattedCnpj = null;
+            output = null;
 
-            if (IsValid(cnpj) == false)
+            if (IsValid(input) == false)
                 return false;
 
-            Span<char> formattedSpan = stackalloc char[Size];
-            NumericData.FormatData(_nonNumericCharsPositions, cnpj, ref formattedSpan);
+            Span<char> outputAsSpan = stackalloc char[Size];
+            NumericData.FormatData(_nonNumericCharsPositions, input, ref outputAsSpan);
 
-            formattedCnpj = new string(formattedSpan);
+            output = new string(outputAsSpan);
             return true;
         }
 
-        private static bool CheckCnpjNumericRule(ReadOnlySpan<char> numericOnlyCnpj)
+        private static bool CheckCnpjNumericRule(ReadOnlySpan<char> numericOnlyInput)
         {
-            return NumericData.CheckIfAllNumbersAreNotTheSame(numericOnlyCnpj)
-                && CheckVerificationDigits(numericOnlyCnpj);
+            return NumericData.CheckIfAllNumbersAreNotTheSame(numericOnlyInput)
+                && CheckVerificationDigits(numericOnlyInput);
         }
 
-        private static bool CheckVerificationDigits(ReadOnlySpan<char> cnpj, int digitsToCheck = 2)
+        private static bool CheckVerificationDigits(ReadOnlySpan<char> input, int digitsToCheck = 2)
         {
             if (digitsToCheck == 0)
                 return true;
@@ -66,9 +76,9 @@ namespace Brazillian.Formatter
             double sum = 0;
             int multiplier = digitsToCheck == 2 ? 5 : 6;
 
-            for (int i = 0; i < cnpj.Length - digitsToCheck; i++)
+            for (int i = 0; i < input.Length - digitsToCheck; i++)
             {
-                sum += char.GetNumericValue(cnpj[i]) * multiplier;
+                sum += char.GetNumericValue(input[i]) * multiplier;
                 multiplier--;
 
                 if (multiplier == 1)
@@ -77,56 +87,67 @@ namespace Brazillian.Formatter
 
             var rest = sum % 11;
             var verificationDigit = rest == 0 || rest == 1 ? 0 : 11 - rest;
-            if (verificationDigit != (int)char.GetNumericValue(cnpj[NumericDigitsSize - digitsToCheck]))
+            if (verificationDigit != (int)char.GetNumericValue(input[NumericDigitsSize - digitsToCheck]))
                 return false;
 
-            return CheckVerificationDigits(cnpj, digitsToCheck - 1);
+            return CheckVerificationDigits(input, digitsToCheck - 1);
         }
 
-        public static string Parse(long cnpj)
+        /// <summary>
+        /// If the CNPJ is valid it will be returned a formatted CNPJ string
+        /// </summary>
+        /// <param name="input">CNPJ to be formatted</param>
+        /// <exception cref="ArgumentException">If the input is not a valid CNPJ</exception>
+        public static string Parse(long input)
         {
-            if (TryParse(cnpj, out string formattedCnpj) == false)
+            if (TryParse(input, out string output) == false)
             {
-                throw new ArgumentException("The CNPJ is not in a valid format.", nameof(cnpj));
+                throw new ArgumentException("The CNPJ is not in a valid format.", nameof(input));
             }
 
-            return formattedCnpj;
+            return output;
         }
 
-        public static bool TryParse(long cnpj, out string formattedCnpj)
+        /// <summary>
+        /// If the CNPJ is valid it will be returned a formatted CNPJ string
+        /// </summary>
+        /// <param name="input">CNPJ to be formatted</param>
+        /// <param name="output">A formatted string</param>
+        public static bool TryParse(long input, out string output)
         {
-            formattedCnpj = null;
+            output = null;
 
-            if (IsValidRange(cnpj) == false)
+            if (IsValidRange(input) == false)
                 return false;
 
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
-            NumericData.TryParseNumberToSpanChar(cnpj, ref numericSpan);
+            NumericData.TryParseNumberToSpanChar(input, ref numericSpan);
 
-            Span<char> formattedSpan = stackalloc char[Size];
-            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+            Span<char> outputAsSpan = stackalloc char[Size];
+            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref outputAsSpan);
 
-            formattedCnpj = new string(formattedSpan);
+            output = new string(outputAsSpan);
 
             return true;
         }
 
         private static bool IsValidRange(long cnpj) => cnpj > 9999999999999 && cnpj < 99999999999999;
 
-        private static bool IsValid(ReadOnlySpan<char> cnpj)
+        private static bool IsValid(ReadOnlySpan<char> input)
         {
-            if (NumericData.CheckQuantityOfNumericChars(cnpj, NumericDigitsSize) == false)
+            if (NumericData.CheckQuantityOfNumericChars(input, NumericDigitsSize) == false)
                 return false;
 
-            Span<char> numericOnlyCnpj = stackalloc char[NumericDigitsSize];
-            NumericData.GetOnlyNumericValues(cnpj, ref numericOnlyCnpj);
+            Span<char> numericOnlyInput = stackalloc char[NumericDigitsSize];
+            NumericData.GetOnlyNumericValues(input, ref numericOnlyInput);
 
-            return CheckCnpjNumericRule(numericOnlyCnpj);
+            return CheckCnpjNumericRule(numericOnlyInput);
         }
 
         public override string ToString() => _value;
         public bool Equals(CNPJ other) => _value == other._value;
         public override bool Equals(object obj) => obj.ToString() == _value;
+        public override int GetHashCode() => HashCode.Combine(_value);
 
         public static implicit operator CNPJ(string input) => new CNPJ(input);
         public static implicit operator CNPJ(long input) => new CNPJ(input);

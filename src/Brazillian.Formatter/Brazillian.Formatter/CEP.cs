@@ -23,62 +23,82 @@ namespace Brazillian.Formatter
             _value = FormatString(value);
         }
 
-        public static string FormatString(ReadOnlySpan<char> cep)
+        /// <summary>
+        /// If the CEP is valid it will be returned a formatted CEP string
+        /// </summary>
+        /// <param name="input">CEP to be formatted</param>
+        /// <exception cref="ArgumentException">If the input is not a valid CEP</exception>
+        public static string FormatString(ReadOnlySpan<char> input)
         {
-            if (TryFormatString(cep, out string formattedCep) == false)
+            if (TryFormatString(input, out string output) == false)
             {
-                throw new ArgumentException("The CEP is not in a valid format.", nameof(cep));
+                throw new ArgumentException("The CEP is not in a valid format.", nameof(input));
             }
 
-            return formattedCep;
+            return output;
         }
 
-        public static bool TryFormatString(ReadOnlySpan<char> cep, out string? formattedCep)
+        /// <summary>
+        /// If the CEP is valid it will be returned a formatted CEP string
+        /// </summary>
+        /// <param name="input">CEP to be formatted</param>
+        /// <param name="output">A formatted string</param>
+        public static bool TryFormatString(ReadOnlySpan<char> input, out string? output)
         {
-            formattedCep = null;
+            output = null;
 
-            if (IsValid(cep) == false)
+            if (IsValid(input) == false)
                 return false;
 
             Span<char> formattedSpan = stackalloc char[Size];
-            NumericData.FormatData(_nonNumericCharsPositions, cep, ref formattedSpan);
+            NumericData.FormatData(_nonNumericCharsPositions, input, ref formattedSpan);
 
-            formattedCep = new string(formattedSpan);
+            output = new string(formattedSpan);
             return true;
         }
 
-        public static string Parse(int cep)
+        /// <summary>
+        /// If the CEP is valid it will be returned a formatted CEP string
+        /// </summary>
+        /// <param name="input">CEP to be formatted</param>
+        /// <exception cref="ArgumentException">If the input is not a valid CEP</exception>
+        public static string Parse(int input)
         {
-            if (TryParse(cep, out string formattedCep) == false)
+            if (TryParse(input, out string output) == false)
             {
-                throw new ArgumentException("The CEP is not in a valid format.", nameof(cep));
+                throw new ArgumentException("The CEP is not in a valid format.", nameof(input));
             }
 
-            return formattedCep;
+            return output;
         }
 
-        public static bool TryParse(int cep, out string formattedCep)
+        /// <summary>
+        /// If the CEP is valid it will be returned a formatted CEP string
+        /// </summary>
+        /// <param name="input">CEP to be formatted</param>
+        /// <param name="output">A formatted string</param>
+        public static bool TryParse(int input, out string output)
         {
-            formattedCep = null;
+            output = null;
 
-            if (IsValidRange(cep) == false)
+            if (IsValidRange(input) == false)
                 return false;
 
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
             numericSpan[0] = '0';
-            NumericData.TryParseNumberToSpanChar(cep, ref numericSpan);
+            NumericData.TryParseNumberToSpanChar(input, ref numericSpan);
 
-            Span<char> formattedSpan = stackalloc char[Size];
-            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref formattedSpan);
+            Span<char> outputAsSpan = stackalloc char[Size];
+            NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref outputAsSpan);
 
-            formattedCep = new string(formattedSpan);
+            output = new string(outputAsSpan);
 
             return true;
         }
         
-        private static bool IsValid(ReadOnlySpan<char> data)
+        private static bool IsValid(ReadOnlySpan<char> input)
         {
-            return NumericData.CheckQuantityOfNumericChars(data, NumericDigitsSize);
+            return NumericData.CheckQuantityOfNumericChars(input, NumericDigitsSize);
         }
 
         private static bool IsValidRange(int cep) => cep >= 999999 && cep <= 99999999;
@@ -87,6 +107,7 @@ namespace Brazillian.Formatter
 
         public bool Equals(CEP other) => _value == other._value;
         public override bool Equals(object obj) => obj.ToString() == _value;
+        public override int GetHashCode() => HashCode.Combine(_value);
 
         public static implicit operator CEP(string input) => new CEP(input);
         public static implicit operator CEP(int input) => new CEP(input);
