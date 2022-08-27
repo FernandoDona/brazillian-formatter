@@ -86,7 +86,8 @@ namespace Brazillian.Formatter
             }
 
             var rest = sum % 11;
-            var verificationDigit = rest == 0 || rest == 1 ? 0 : 11 - rest;
+            var verificationDigit = 11 - rest;
+            verificationDigit = verificationDigit >= 10 ? 0 : verificationDigit;
             if (verificationDigit != (int)char.GetNumericValue(input[NumericDigitsSize - digitsToCheck]))
                 return false;
 
@@ -123,6 +124,9 @@ namespace Brazillian.Formatter
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
             NumericData.TryParseNumberToSpanChar(input, ref numericSpan);
 
+            if (CheckCnpjNumericRule(numericSpan) == false)
+                return false;
+
             Span<char> outputAsSpan = stackalloc char[Size];
             NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref outputAsSpan);
 
@@ -131,7 +135,7 @@ namespace Brazillian.Formatter
             return true;
         }
 
-        private static bool IsValidRange(long cnpj) => cnpj > 9999999999999 && cnpj < 99999999999999;
+        private static bool IsValidRange(long cnpj) => cnpj > 01_000_000_000_000 && cnpj < 99_999_999_999_999;
 
         private static bool IsValid(ReadOnlySpan<char> input)
         {

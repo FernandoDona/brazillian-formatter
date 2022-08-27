@@ -24,6 +24,7 @@ public class CNPJTests
     [InlineData("28.640.571/0001-00")]
     [InlineData("89.491.969/0001-16")]
     [InlineData("65.487.395/0001-44")]
+    [InlineData("05.349.012/0001-40")]
     [InlineData("32.598.657/0001-99")]
     [InlineData("32598657000199")]
     [InlineData("  32 598 657  0001 99  ")]
@@ -33,7 +34,8 @@ public class CNPJTests
             "28.640.571/0001-00",
             "89.491.969/0001-16",
             "65.487.395/0001-44",
-            "32.598.657/0001-99"
+            "32.598.657/0001-99",
+            "05.349.012/0001-40"
         };
         CNPJ newCnpj = cnpj;
         Assert.Contains(newCnpj.ToString(), correctResultList);
@@ -54,7 +56,6 @@ public class CNPJTests
     [Theory]
     [InlineData("28.640.571/0001-00")]
     [InlineData("89.491.969/0001-16")]
-    [InlineData("65.487.395/0001-44")]
     [InlineData("32.598.657/0001-99")]
     [InlineData("32598657000199")]
     [InlineData("  32 598 657  0001 99  ")]
@@ -67,13 +68,15 @@ public class CNPJTests
     [InlineData(69841968000147)]
     [InlineData(39702266000111)]
     [InlineData(17641528000142)]
+    [InlineData(05349012000140)]
     public void ShouldReturnTrueAndFormatLongToString(long cnpj)
     {
         var correctResultList = new List<string>
         {
             "69.841.968/0001-47",
             "39.702.266/0001-11",
-            "17.641.528/0001-42"
+            "17.641.528/0001-42",
+            "05.349.012/0001-40"
         };
 
         var succeeded = CNPJ.TryParse(cnpj, out var formattedCep);
@@ -85,7 +88,7 @@ public class CNPJTests
     [InlineData(162003456)]
     [InlineData(6984196800147)]
     [InlineData(397022660001113)]
-    public void ShouldReturnFalseWhenTryFormatLongToString(long cnpj)
+    public void ShouldReturnFalseWhenTryFormatParseToString(long cnpj)
     {
         var succeeded = CNPJ.TryParse(cnpj, out var formattedCnpj);
         Assert.False(succeeded);
@@ -95,7 +98,7 @@ public class CNPJTests
     [InlineData(162003456)]
     [InlineData(6984196800147)]
     [InlineData(397022660001113)]
-    public void ShouldThrowExceptionWhenTryToFormatLongToString(long cnpj)
+    public void ShouldThrowExceptionWhenTryToParseLongToString(long cnpj)
     {
         CNPJ newCnpj;
         Assert.Throws<ArgumentException>(() => newCnpj = cnpj);

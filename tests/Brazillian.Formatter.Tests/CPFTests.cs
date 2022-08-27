@@ -48,7 +48,7 @@ public class CPFTests
 
     [Theory]
     [InlineData("297.171.950-21")]
-    [InlineData("29717195021")]
+    [InlineData("020.776.020-90")]
     [InlineData("29717195021   ")]
     [InlineData("297 171 950 21")]
     [InlineData("  297171 95021")]
@@ -58,19 +58,19 @@ public class CPFTests
     }
 
     [Theory]
-    [InlineData(50312283008)]
-    [InlineData(69375907090)]
-    [InlineData(90970999003)]
-    public void ShouldReturnTrueAndFormatLongToString(long cnpj)
+    [InlineData(69853456036)]
+    [InlineData(02077602090)]
+    [InlineData(84463849063)]
+    public void ShouldReturnTrueAndFormatLongToString(long cpf)
     {
         var correctResultList = new List<string>
         {
-            "503.122.830-08",
-            "693.759.070-90",
-            "909.709.990-03"
+            "698.534.560-36",
+            "020.776.020-90",
+            "844.638.490-63"
         };
 
-        var succeeded = CPF.TryParse(cnpj, out var formattedCpf);
+        var succeeded = CPF.TryParse(cpf, out var formattedCpf);
         Assert.Contains(formattedCpf, correctResultList);
         Assert.True(succeeded);
     }
@@ -78,8 +78,9 @@ public class CPFTests
     [Theory]
     [InlineData(162003456)]
     [InlineData(9097099900)]
+    [InlineData(34513416323)]
     [InlineData(909709990033)]
-    public void ShouldReturnFalseWhenTryFormatLongToString(long cpf)
+    public void ShouldReturnFalseWhenTryParseLongToString(long cpf)
     {
         var succeeded = CPF.TryParse(cpf, out _);
         Assert.False(succeeded);
@@ -88,8 +89,9 @@ public class CPFTests
     [Theory]
     [InlineData(162003456)]
     [InlineData(9097099900)]
+    [InlineData(34513416323)]
     [InlineData(909709990033)]
-    public void ShouldThrowExceptionWhenTryToFormatLongToString(long cpf)
+    public void ShouldThrowExceptionWhenTryToParseLongToString(long cpf)
     {
         CPF newCpf;
         Assert.Throws<ArgumentException>(() => newCpf = cpf);

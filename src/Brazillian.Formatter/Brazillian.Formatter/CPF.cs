@@ -72,23 +72,29 @@ namespace Brazillian.Formatter
                 return true;
 
             double sum = 0;
-            int multiplier = NumericDigitsSize - 1;
+            int multiplier = digitsToCheck == 2 ? 10 : 11;
 
-            for (int i = 2 - digitsToCheck; i < input.Length - digitsToCheck; i++)
+            for (int i = 0; i < input.Length - digitsToCheck; i++)
             {
                 sum += char.GetNumericValue(input[i]) * multiplier;
                 multiplier--;
             }
 
-            var rest = sum % NumericDigitsSize;
-            var verificationDigit = NumericDigitsSize - rest;
+            var rest = sum % 11;
+            var verificationDigit = 11 - rest;
+            verificationDigit = verificationDigit >= 10 ? 0 : verificationDigit;
             if (verificationDigit != (int)char.GetNumericValue(input[NumericDigitsSize - digitsToCheck]))
                 return false;
 
             return CheckVerificationDigits(input, digitsToCheck - 1);
         }
 
-        private static bool IsValid(ReadOnlySpan<char> input)
+        /// <summary>
+        /// Check if the input follows the rules of the data type but doesn't check if it's formatted.
+        /// </summary>
+        /// <param name="input">The input to be checked.</param>
+        /// <returns>true if it's valid or false if it's not.</returns>
+        public static bool IsValid(ReadOnlySpan<char> input)
         {
             if (NumericData.CheckQuantityOfNumericChars(input, NumericDigitsSize) == false)
                 return false;
@@ -129,6 +135,9 @@ namespace Brazillian.Formatter
             Span<char> numericSpan = stackalloc char[NumericDigitsSize];
             NumericData.TryParseNumberToSpanChar(input, ref numericSpan);
 
+            if (CheckCpfNumericRule(numericSpan) == false)
+                return false;
+
             Span<char> outputAsSpan = stackalloc char[Size];
             NumericData.FormatData(_nonNumericCharsPositions, numericSpan, ref outputAsSpan);
 
@@ -139,7 +148,7 @@ namespace Brazillian.Formatter
 
         private static bool IsValidRange(long cpf)
         {
-            return cpf > 9999999999 && cpf < 99999999999;
+            return cpf > 01_000_000_000 && cpf < 99_999_999_999;
         }
 
         public override string ToString() => _value;

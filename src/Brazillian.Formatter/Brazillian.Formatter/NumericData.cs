@@ -89,6 +89,15 @@ namespace Brazillian.Formatter
                 numericOnlyData[index--] = Convert.ToChar(restChar);
                 data /= 10;
             }
+
+            for (int i = 0; i < numericOnlyData.Length; i++)
+            {
+                if(numericOnlyData[i] == '\0')
+                    numericOnlyData[i] = '0';
+
+                if (numericOnlyData[i] != '\0')
+                    break;
+            }
         }
     }
 }
