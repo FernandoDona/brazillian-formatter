@@ -101,7 +101,7 @@ namespace Brazillian.Formatter
             return NumericData.CheckQuantityOfNumericChars(input, NumericDigitsSize);
         }
 
-        private static bool IsValidRange(int cep) => cep >= 999999 && cep <= 99999999;
+        private static bool IsValidRange(int cep) => cep > 999999 && cep <= 99999999;
 
         public override string ToString() => _value;
 
